@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id                                    Int      @id @default(autoincrement())
+  email                                 String   @db.VarChar(255) @unique
+  name                                  String   @db.VarChar(255)
+  password                              String   @db.VarChar(255)
+
+  friends_user_id_accept                Friend[] @relation("friends_user_id_accept")
+  friends_user_id_req                   Friend[] @relation("friends_user_id_req")
+
+  show_lists_user_id                    ShowList[] @relation("list_of_shows_of_user")
+	@@map("users")
+}
+
+model Friend {
+  user_id_req                         Int      @db.Integer
+  user_id_accept                      Int      @db.Integer
+  accepted                            Boolean  @default(false)
+  users_user_id_accept                User     @relation("friends_user_id_accept", fields: [user_id_accept], references: [id])
+  users_user_id_req                   User     @relation("friends_user_id_req", fields: [user_id_req], references: [id])
+
+  @@id([user_id_req, user_id_accept])
+	@@map("friends")
+}
+
+model Show {
+  show_id            Int                @id @db.Integer
+  show_lists_show_id Show2ShowList[]
+
+  @@map("shows")
+}
+
+model Show2ShowList {
+  user_id Int         @db.Integer
+  list_id Int         @db.Integer
+  show_id Int         @db.Integer
+  
+  user    ShowList    @relation("user_id_from_show_list", fields: [user_id], references: [user_id])
+  show    Show        @relation(fields: [show_id], references: [show_id])
+  list    ShowList    @relation("list_id_from_show_list", fields: [list_id], references: [list_id])
+
+  @@id([user_id, list_id])
+  @@unique([user_id, list_id])
+  @@map("shows_to_show_lists")
+}
+
+model ShowList {
+  user_id         Int               @db.Integer @unique
+  list_id         Int               @db.Integer @unique
+  list_name       String            @db.VarChar(255)
+
+  is_edited       Boolean           @default(false)
+  created_on      DateTime          @default(now())
+  updated_on      DateTime          @updatedAt
+
+  users_user_id   User              @relation("list_of_shows_of_user", fields: [user_id], references: [id])
+  show_user_id    Show2ShowList[]   @relation("user_id_from_show_list")
+  show_list_id    Show2ShowList[]   @relation("list_id_from_show_list")
+
+  @@id([user_id, list_id])
+  @@unique([user_id, list_id])
+  @@map("show_lists")
+}
+
+model Review {
+  user_id         Int         @db.Integer
+  show_id         Int         @db.Integer
+  title           String      @db.VarChar(255)
+  review_text     String      @db.Text
+  likes           Int         @db.Integer
+  dislikes        Int         @db.Integer
+
+  is_edited       Boolean     @default(false)
+  created_on      DateTime    @default(now())
+  updated_on      DateTime    @updatedAt
+
+
+  @@id([user_id, show_id])
+  @@map("reviews")
+}
+
+model LikedShow {
+  user_id         Int         @db.Integer
+  show_id         Int         @db.Integer
+  rating          Int         @db.Integer
+
+  @@id([user_id, show_id])
+  @@map("liked_shows")
+}

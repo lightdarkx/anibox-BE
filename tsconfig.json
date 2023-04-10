@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "rootDirs": ["src"],
+    "outDir": "dist",
+    "target": "es2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"],
+  "ts-node": {
+    "esm": true
+  },
+  "forceConsistentCasingInFileNames": false // Fix for name regex pattern
+}
